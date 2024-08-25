@@ -132,12 +132,11 @@ router.post('/login', async(req, res) => {
 });
 
 
-// Dashboard route to render the user's dashboard with family tree data
 router.get('/dashboard', async(req, res) => {
     try {
         // If req.user is not set, find a user by a known ID (this is just an example)
         if (!req.user) {
-            req.user = await User.findByPk(1); // Replace 1 with the correct user ID logic or session-based retrieval
+            req.user = await User.findByPk(1); // Replace 1 with the correct user ID logic
         }
 
         // Fetch all users from the database
