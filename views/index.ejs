@@ -1,11 +1,77 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title><%= title %></title>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
-  </head>
-  <body>
-    <h1><%= title %></h1>
-    <p>Welcome to <%= title %></p>
-  </body>
+
+<head>
+    <title>
+        <%= title %>
+    </title>
+    <link rel="stylesheet" href="/stylesheets/style.css" />
+</head>
+
+<body>
+    <header>
+        <h1>
+            <%= title %>
+        </h1>
+        <nav>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/users/enter-details">Enter Details</a></li>
+                <li><a href="/dashboard">Dashboard</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <h2>Welcome to Family Tree Home</h2>
+        <p>Start by entering your details to create or explore your family tree.</p>
+
+        <section>
+            <h3>Enter Your Details:</h3>
+            <form action="/users/submit-details" method="POST">
+                <div>
+                    <label for="fullName">Full Name:</label>
+                    <input type="text" name="fullName" id="fullName" required />
+                </div>
+                <div>
+                    <label for="age">Age:</label>
+                    <input type="number" name="age" id="age" required />
+                </div>
+                <div id="nationalIdDiv" style="display: none;">
+                    <label for="nationalId">National ID:</label>
+                    <input type="text" name="nationalId" id="nationalId" />
+                </div>
+                <button type="submit">Submit</button>
+            </form>
+        </section>
+
+        <section>
+            <h3>Features:</h3>
+            <ul>
+                <li>Create and manage your own family tree</li>
+                <li>Add, edit, and link family members</li>
+                <li>Visualize connections between family members</li>
+                <li>Collaborate with family members to expand the tree</li>
+            </ul>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Family Tree Project. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const ageInput = document.getElementById('age');
+        const nationalIdDiv = document.getElementById('nationalIdDiv');
+
+        ageInput.addEventListener('input', function() {
+            if (parseInt(this.value) >= 18) {
+                nationalIdDiv.style.display = 'block';
+            } else {
+                nationalIdDiv.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+
 </html>
