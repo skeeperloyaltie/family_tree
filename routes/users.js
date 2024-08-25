@@ -6,7 +6,7 @@ const FamilyMember = require('../models/FamilyMember'); // Sequelize FamilyMembe
 
 // Handle form submission
 router.post('/submit-details', async(req, res) => {
-    const { fullName, age, nationalId } = req.body;
+    const { fullName, username, age, nationalId } = req.body;
 
     try {
         let user;
@@ -17,45 +17,39 @@ router.post('/submit-details', async(req, res) => {
                 return res.status(400).send('National ID is required for users 18 and older.');
             }
 
-            // Check if the nationalId and fullName both match
-            const existingUser = await User.findOne({ where: { nationalId, fullName } });
+            // Check if the nationalId and username both match
+            const existingUser = await User.findOne({ where: { nationalId, username } });
             if (existingUser) {
-                // User is valid, redirect to dashboard
-                return res.render('dashboard', {
-                    title: 'Dashboard',
-                    user: {
-                        ...existingUser.toJSON(),
-                        siblings: existingUser.siblings || [] // Ensure siblings is an array
-                    },
-                    message: 'Welcome back!'
-                });
-            } else {
-                // Name and ID do not match, ask for correct details
-                return res.status(400).send('The provided name and National ID do not match our records. Please input the correct details.');
+                return res.status(400).send('Username or National ID already exists. Please choose a different username.');
             }
+
+            user = await User.create({ fullName, username, age, nationalId });
         } else {
             // Generate a unique ID for users under 18
             const uniqueId = uuidv4();
-            user = await User.create({ fullName, age, uniqueId });
+            const existingUser = await User.findOne({ where: { username, uniqueId } });
+            if (existingUser) {
+                return res.status(400).send('Username already exists. Please choose a different username.');
+            }
 
-            // Redirect to a dashboard or confirmation page for new users
-            res.render('dashboard', {
-                title: 'Dashboard',
-                user: {
-                    ...user.toJSON(),
-                    siblings: [] // Initialize with an empty array for siblings
-                },
-                message: 'Your details have been submitted successfully!'
-            });
+            user = await User.create({ fullName, username, age, uniqueId });
         }
+
+        // Redirect to a dashboard or confirmation page
+        res.render('dashboard', {
+            title: 'Dashboard',
+            user: {
+                ...user.toJSON(),
+                siblings: user.siblings || [] // Initialize with an empty array for siblings
+            },
+            message: 'Your details have been submitted successfully!'
+        });
     } catch (err) {
-        if (err.name === 'SequelizeUniqueConstraintError') {
-            return res.status(400).send('National ID already exists. Please use a different ID.');
-        }
         console.error(err);
         res.status(500).send('An error occurred while processing your request.');
     }
 });
+
 
 
 router.post('/add-sibling', async(req, res) => {
@@ -104,6 +98,57 @@ router.post('/add-sibling', async(req, res) => {
     }
 });
 
+router.post('/login', async(req, res) => {
+    const { username, nationalId } = req.body;
+
+    try {
+        let user;
+
+        if (nationalId) {
+            // User is 18 or older
+            user = await User.findOne({ where: { username, nationalId } });
+        } else {
+            // User is under 18
+            user = await User.findOne({ where: { username } });
+        }
+
+        if (!user) {
+            return res.status(400).send('Username and National ID do not match our records. Please try again.');
+        }
+
+        // Redirect to dashboard
+        res.render('dashboard', {
+            title: 'Dashboard',
+            user: {
+                ...user.toJSON(),
+                siblings: user.siblings || []
+            },
+            message: 'Welcome back!'
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('An error occurred while processing your request.');
+    }
+});
+
+
+// Example route in your Node.js application
+router.get('/dashboard', async(req, res) => {
+    try {
+        // Fetch all users from the database
+        const allUsers = await User.findAll();
+
+        // Pass the user data to the dashboard view
+        res.render('dashboard', {
+            title: 'Dashboard',
+            user: req.user, // Current logged-in user
+            allUsers: allUsers // All users in the system
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('An error occurred while fetching the users.');
+    }
+});
 
 
 module.exports = router;
