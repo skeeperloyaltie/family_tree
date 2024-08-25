@@ -132,13 +132,18 @@ router.post('/login', async(req, res) => {
 });
 
 
-// Example route in your Node.js application
+// Dashboard route to render the user's dashboard with family tree data
 router.get('/dashboard', async(req, res) => {
     try {
+        // If req.user is not set, find a user by a known ID (this is just an example)
+        if (!req.user) {
+            req.user = await User.findByPk(1); // Replace 1 with the correct user ID logic or session-based retrieval
+        }
+
         // Fetch all users from the database
         const allUsers = await User.findAll();
 
-        // Pass the user data to the dashboard view
+        // Render the dashboard view and pass the users
         res.render('dashboard', {
             title: 'Dashboard',
             user: req.user, // Current logged-in user
@@ -149,6 +154,7 @@ router.get('/dashboard', async(req, res) => {
         res.status(500).send('An error occurred while fetching the users.');
     }
 });
+
 
 
 module.exports = router;
